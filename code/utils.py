@@ -3,6 +3,9 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 import string
 import nltk
+import os
+from sklearn.linear_model import LogisticRegression
+import numpy as np
 
 def comment_tokenizer(text,dropped_features=[]):
 
@@ -65,3 +68,32 @@ def comment_tokenizer(text,dropped_features=[]):
     tokens = [token for token in tokens if token not in dropped_features]
 
     return tokens
+
+class PlattScaling(object):
+
+    def __init__(self):
+        self.lr = None
+
+    def fit_convote(self):
+        with open(os.path.join('..','data','convote','edges_individual_document.v1.1.csv'),'rb') as infile:
+            SVM_outputs = []
+            labels = []
+            for line in infile:
+                line = line.split(',')
+                _,_,_,vote = line[0].split('_')
+                if 'N' in vote:
+                    vote = False
+                else :
+                    vote = True
+                SVM_outputs.append(float(line[2]))
+                labels.append(vote)
+            lr = LogisticRegression()
+            lr.fit(np.reshape(SVM_outputs,(-1,1)),labels)
+            self.lr = lr
+
+    def predict_proba(self,X):
+        if isinstance(X,list):
+            return self.lr.predict_proba(np.reshape(X,(1,-1)))
+        else:
+            raise ValueError('Detected {} instead of list'.format(type(X)))
+
