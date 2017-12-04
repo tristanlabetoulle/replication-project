@@ -4,31 +4,60 @@ import re
 import numpy as np
 import pickle
 from utils import PlattScaling
+import math
 
 def wikipedia_graph():
-    G = nx.Graph()
+    G = nx.DiGraph()
+    name_to_index = {}
+    index = 0
 
     print '--CONSTRUCTION OF THE WIKIPEDIA GRAPH--'
     with open(os.path.join('..','data','wikipedia','rfa_all.txt'),'rb') as infile:
         node_data = []
+        skip=False
         for line in infile:
             if line[0:3]=='SRC':
+                if line[4:]=='\n':
+                    skip=True
                 node_data.append(line[4:-1])
             elif line[0:3]=='TGT':
+                if line[4:]=='\n':
+                    skip=True
                 node_data.append(line[4:-1])
             elif line[0:3]=='VOT':
+                if line[4:]=='\n':
+                    skip=True
                 node_data.append(int(line[4:-1]))
             elif line[0:3]=='TXT':
+                if line[4:]=='\n':
+                    skip=True
                 node_data.append(line[4:-1])
             elif line=='\n':
-                if node_data[2]!=0:
-                    G.add_edge(node_data[0],node_data[1],vote=node_data[2],text=node_data[3])
+                if not skip and node_data[2]!=0 and node_data[0]!=node_data[1]:
+                    if float(node_data[2])==-1:
+                        if not node_data[0] in name_to_index:
+                            name_to_index[node_data[0]]=index
+                            index = index+1
+                        if not node_data[1] in name_to_index:
+                            name_to_index[node_data[1]]=index
+                            index = index+1
+                        G.add_edge(str(name_to_index[node_data[0]]),str(name_to_index[node_data[1]]),vote=0,text=node_data[3])
+                    else:
+                        if not node_data[0] in name_to_index:
+                            name_to_index[node_data[0]]=index
+                            index = index+1
+                        if not node_data[1] in name_to_index:
+                            name_to_index[node_data[1]]=index
+                            index = index+1
+                        G.add_edge(str(name_to_index[node_data[0]]),str(name_to_index[node_data[1]]),vote=1,text=node_data[3])
+                skip=False
                 node_data = []
 
+    print '{} nodes, {} edges'.format(G.number_of_nodes(),G.number_of_edges())
     nx.write_gpickle(G,os.path.join('..','data','wikipedia','graph.pkl'))
     print '--GRAPH STORED IN DATA--'
 
-def wikipedia_sets(number_sets=10,number_nodes=350):
+def wikipedia_sets(number_sets=10,number_nodes=200):
     print '--CREATION OF THE GRAPH SETS--'
     G = nx.read_gpickle(os.path.join('..','data','wikipedia','graph.pkl'))
     random_indexes = np.random.choice(range(G.number_of_nodes()),number_sets,replace=False)
@@ -40,12 +69,12 @@ def wikipedia_sets(number_sets=10,number_nodes=350):
         list_nodes = []
         while len(list_nodes)<=number_nodes:
             node_name = queue.pop(0)
-            neighbors = G[node_name].keys()
+            neighbors = list(nx.all_neighbors(G,node_name))
             neighbors = [ neighbor for neighbor in neighbors if neighbor not in list_nodes]
             for neighbor in neighbors :
                 list_nodes.append(neighbor)
                 queue.append(neighbor)
-        subgraphs_set.append(nx.Graph(G.subgraph(list_nodes[:350])))
+        subgraphs_set.append(nx.DiGraph(G.subgraph(list_nodes[:number_nodes])))
     pickle.dump(subgraphs_set,open(os.path.join('..','data','wikipedia','subgraphs_set.pkl'),'wb'))
     print '--{} GRAPH SETS CREATED WITH {} NODES EACH--'.format(number_sets,number_nodes)
 
@@ -60,21 +89,21 @@ def get_training_test_sets_wikipedia(training_set_subgraph,evidence_ratio=1.0):
 
     training_set_subgraph = full_training_set_subgraph.copy()
     testing_set_subgraph = full_testing_set_subgraph.copy()
+
     #remove votes for evidence_ratio
     print 'Keep {}% of the original evidence ( votes ) and change the others to \'None\'...'.format(evidence_ratio*100)
     indexes_remove_votes_training = np.random.choice(training_set_subgraph.number_of_edges(),int(training_set_subgraph.number_of_edges()*(1-evidence_ratio)),replace=False)
     number_removed_evidence_training = 0
-    for count,edge in enumerate(training_set_subgraph.edges()):
-        if count in indexes_remove_votes_training:
+    for index,edge in enumerate(training_set_subgraph.edges()):
+        if index in indexes_remove_votes_training:
             training_set_subgraph[edge[0]][edge[1]]['vote']=None
-            number_removed_evidence_training = number_removed_evidence_training + 1
+            number_removed_evidence_training = number_removed_evidence_training + 1    
     indexes_remove_votes_testing = np.random.choice(testing_set_subgraph.number_of_edges(),int(testing_set_subgraph.number_of_edges()*(1-evidence_ratio)),replace=False)
     number_removed_evidence_testing = 0
-    for count,edge in enumerate(testing_set_subgraph.edges()):
-        if count in indexes_remove_votes_testing:
+    for index,edge in enumerate(testing_set_subgraph.edges()):
+        if index in indexes_remove_votes_testing:
             testing_set_subgraph[edge[0]][edge[1]]['vote']=None
             number_removed_evidence_testing = number_removed_evidence_testing + 1
-    
     print 'Training Edges : {}'.format(training_set_subgraph.number_of_edges())
     print 'Testing Edges : {}'.format(testing_set_subgraph.number_of_edges())
     print '--REMOVED {} OVERLAPPING EDGES--'.format(len(removed_edges))
@@ -82,12 +111,14 @@ def get_training_test_sets_wikipedia(training_set_subgraph,evidence_ratio=1.0):
     print '--REMOVED {} EVIDENCE IN TESTING--'.format(number_removed_evidence_testing)
     return training_set_subgraph, testing_set_subgraph, full_training_set_subgraph, full_testing_set_subgraph
 
+#G = nx.read_gpickle(os.path.join('..','data','wikipedia','graph.pkl'))
+#print '{} nodes, {} edges'.format(G.number_of_nodes(),G.number_of_edges())
 #1) Create the graph
 #wikipedia_graph()
 #2) Create the sets
 #wikipedia_sets()
 #3) Get the training and testing sets with non-overlapping edges
-#get_training_test_sets(0)
+#get_training_test_sets_wikipedia(0,evidence_ratio=0.5)
             
 def convote_graph():
 
@@ -132,7 +163,7 @@ def convote_graph():
 
     positive_edges = 0
     for edge in G.edges():
-        G[edge[0]][edge[1]]['vote_agree']=sum(G[edge[0]][edge[1]]['vote_agree'])>=(len(G[edge[0]][edge[1]]['vote_agree'])+1)/2
+        G[edge[0]][edge[1]]['vote_agree']=int(sum(G[edge[0]][edge[1]]['vote_agree'])>=(len(G[edge[0]][edge[1]]['vote_agree'])+1)/2)
         G[edge[0]][edge[1]]['sentiment_agree']=np.mean(G[edge[0]][edge[1]]['sentiment_agree'])
         if G[edge[0]][edge[1]]['vote_agree']==True:
             positive_edges=positive_edges+1
@@ -175,13 +206,13 @@ def get_training_test_sets_convote(training_set_subgraph,evidence_ratio=1.0):
     number_removed_evidence_training = 0
     for count,edge in enumerate(training_set_subgraph.edges()):
         if count in indexes_remove_votes_training:
-            training_set_subgraph[edge[0]][edge[1]]['vote']=None
+            training_set_subgraph[edge[0]][edge[1]]['vote_agree']=None
             number_removed_evidence_training = number_removed_evidence_training + 1
     indexes_remove_votes_testing = np.random.choice(testing_set_subgraph.number_of_edges(),int(testing_set_subgraph.number_of_edges()*(1-evidence_ratio)),replace=False)
     number_removed_evidence_testing = 0
     for count,edge in enumerate(testing_set_subgraph.edges()):
         if count in indexes_remove_votes_testing:
-            testing_set_subgraph[edge[0]][edge[1]]['vote']=None
+            testing_set_subgraph[edge[0]][edge[1]]['vote_agree']=None
             number_removed_evidence_testing = number_removed_evidence_testing + 1
     
     print 'Training Edges : {}'.format(training_set_subgraph.number_of_edges())
@@ -190,6 +221,8 @@ def get_training_test_sets_convote(training_set_subgraph,evidence_ratio=1.0):
     print '--REMOVED {} EVIDENCE IN TESTING--'.format(number_removed_evidence_testing)
     return training_set_subgraph, testing_set_subgraph, full_training_set_subgraph, full_testing_set_subgraph
 
+G = nx.read_gpickle(os.path.join('..','data','convote','graph.pkl'))
+print '{} nodes, {} edges'.format(G.number_of_nodes(),G.number_of_edges())
 #1) Create the graph
 #convote_graph()
 #2) Create the sets

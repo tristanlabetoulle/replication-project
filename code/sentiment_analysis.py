@@ -17,30 +17,29 @@ class SentimentClassifier(object):
         self.model = None
         self.vectorizer = None
         self.sorted_features = None
+        self.number_dropped_features = 0
 
-    def score(self,comments,votes,number_dropped_features=0):
+    def set_number_dropped_features(self,number_dropped_features):
+        self.number_dropped_features = number_dropped_features
+        print 'Set to drop the first top {} features ( based on MI ) from the comments'.format(number_dropped_features)
+
+    def score(self,comments,votes):
         if isinstance(comments,list):
-            if number_dropped_features!=0:
-                print 'Dropping the first top {} features ( based on MI ) from the comments'.format(number_dropped_features)
-            vectors = self.vectorizer.transform([' '.join(comment_tokenizer(comment,dropped_features=self.sorted_features[:number_dropped_features])) for comment in comments])
+            vectors = self.vectorizer.transform([' '.join(comment_tokenizer(comment,dropped_features=self.sorted_features[:self.number_dropped_features])) for comment in comments])
             return self.model.score(vectors,votes)
         else:
             raise ValueError('Detected {} instead of list'.format(type(comments)))
 
     def predict(self,comments,number_dropped_features=0):
         if isinstance(comments,list):
-            if number_dropped_features!=0:
-                print 'Dropping the first top {} features ( based on MI ) from the comments'.format(number_dropped_features)
-            vectors = self.vectorizer.transform([' '.join(comment_tokenizer(comment,dropped_features=self.sorted_features[:number_dropped_features])) for comment in comments])
+            vectors = self.vectorizer.transform([' '.join(comment_tokenizer(comment,dropped_features=self.sorted_features[:self.number_dropped_features])) for comment in comments])
             return list(self.model.predict(vectors))
         else:
             raise ValueError('Detected {} instead of list'.format(type(comments)))
 
     def predict_proba(self,comments,number_dropped_features=0):
         if isinstance(comments,list):
-            if number_dropped_features!=0:
-                print 'Dropping the first top {} features ( based on MI ) from the comments'.format(number_dropped_features)
-            vectors = self.vectorizer.transform([' '.join(comment_tokenizer(comment,dropped_features=self.sorted_features[:number_dropped_features])) for comment in comments])
+            vectors = self.vectorizer.transform([' '.join(comment_tokenizer(comment,dropped_features=self.sorted_features[:self.number_dropped_features])) for comment in comments])
             return list(self.model.predict_proba(vectors))
         else:
             raise ValueError('Detected {} instead of list'.format(type(comments)))

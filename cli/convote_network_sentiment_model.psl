@@ -1,0 +1,29 @@
+1.0: (covoted(A,B) & covoted(B,C) & covoted(C,A) & ~agree(A,B) & ~agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(A,B) & covoted(B,C) & covoted(A,C) & ~agree(A,B) & ~agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+1.0: (covoted(A,B) & covoted(C,B) & covoted(C,A) & ~agree(A,B) & ~agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(A,B) & covoted(C,B) & covoted(A,C) & ~agree(A,B) & ~agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+1.0: (covoted(B,A) & covoted(B,C) & covoted(C,A) & ~agree(B,A) & ~agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(B,A) & covoted(B,C) & covoted(A,C) & ~agree(B,A) & ~agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+1.0: (covoted(B,A) & covoted(C,B) & covoted(C,A) & ~agree(B,A) & ~agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(B,A) & covoted(C,B) & covoted(A,C) & ~agree(B,A) & ~agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+
+1.0: (covoted(A,B) & covoted(B,C) & covoted(C,A) & ~agree(A,B) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> ~agree(C,A) ^2
+1.0: (covoted(A,B) & covoted(B,C) & covoted(A,C) & ~agree(A,B) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> ~agree(A,C) ^2
+1.0: (covoted(A,B) & covoted(C,B) & covoted(C,A) & ~agree(A,B) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> ~agree(C,A) ^2
+1.0: (covoted(A,B) & covoted(C,B) & covoted(A,C) & ~agree(A,B) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> ~agree(A,C) ^2
+1.0: (covoted(B,A) & covoted(B,C) & covoted(C,A) & ~agree(B,A) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> ~agree(C,A) ^2
+1.0: (covoted(B,A) & covoted(B,C) & covoted(A,C) & ~agree(B,A) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> ~agree(A,C) ^2
+1.0: (covoted(B,A) & covoted(C,B) & covoted(C,A) & ~agree(B,A) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> ~agree(C,A) ^2
+1.0: (covoted(B,A) & covoted(C,B) & covoted(A,C) & ~agree(B,A) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> ~agree(A,C) ^2
+
+1.0: (covoted(A,B) & covoted(B,C) & covoted(C,A) & agree(A,B) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(A,B) & covoted(B,C) & covoted(A,C) & agree(A,B) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+1.0: (covoted(A,B) & covoted(C,B) & covoted(C,A) & agree(A,B) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(A,B) & covoted(C,B) & covoted(A,C) & agree(A,B) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+1.0: (covoted(B,A) & covoted(B,C) & covoted(C,A) & agree(B,A) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(B,A) & covoted(B,C) & covoted(A,C) & agree(B,A) & agree(B,C) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+1.0: (covoted(B,A) & covoted(C,B) & covoted(C,A) & agree(B,A) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(C,A) ^2
+1.0: (covoted(B,A) & covoted(C,B) & covoted(A,C) & agree(B,A) & agree(C,B) & (A - B) & (B - C) & (C - A)) >> agree(A,C) ^2
+
+1.0: (covoted(A,B) & prior(A,B) & (A-B)) >> agree(A,B) ^2
+1.0: (covoted(A,B) & agree(A,B) & (A-B)) >> prior(A,B) ^2

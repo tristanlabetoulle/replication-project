@@ -1,0 +1,12 @@
+predicates:
+  trusts/2: open
+  knows/2 : closed
+  prior/2 : closed
+
+observations:
+  trusts : wikipedia_trusts_obs.txt
+  knows : wikipedia_knows_obs.txt
+  prior : wikipedia_prior_obs.txt
+  
+targets:
+  trusts : wikipedia_trusts_targets.txt

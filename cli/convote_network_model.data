@@ -1,0 +1,10 @@
+predicates:
+  agree/2: open
+  covoted/2 : closed
+
+observations:
+  agree : convote_agree_obs.txt
+  covoted : convote_covoted_obs.txt
+  
+targets:
+  agree : convote_agree_targets.txt
